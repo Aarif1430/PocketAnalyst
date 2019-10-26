@@ -51,7 +51,10 @@ def process_response(df_response):
     return messages
 
 def handle_user_message(message, userid):
-    user_registered = True #figure this out later
+    user = getUser(userid)
+    user_registered = True
+    if not user:
+        user_registered = False
     session_id = hash(userid)
     resp = send_msg_to_bot(message, session_id) #response.query_result
     print(resp.intent.display_name)
@@ -64,6 +67,8 @@ def handle_user_message(message, userid):
             riskmsg = "It seems that you're open to a bit of risk. I'll try to suggest trades that maximize your upside :)"
         doc_url = embedded_signing_ceremony()
         return ["Registration success. Welcome, " + name + ". Glad to have you on board!", riskmsg, "We're opened up a brokerage account for you at XYZbrokerage. Please make sure to sign this docusign form: " + shortener.short(doc_url)]
+    elif resp.intent.display_name == "account.create" and user_registered:
+        return ["You already have an account :)"]
     elif resp.intent.display_name == "get-stock-info":
         company = resp.parameters.fields["company"].string_value.lower()
         print("displaying stock info")
