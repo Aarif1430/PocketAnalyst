@@ -69,6 +69,11 @@ def handle_user_message(message, userid):
         return ["Registration success. Welcome, " + name + ". Glad to have you on board!", riskmsg, "We're opened up a brokerage account for you at XYZbrokerage. Please make sure to sign this docusign form: " + shortener.short(doc_url)]
     elif resp.intent.display_name == "account.create" and user_registered:
         return ["You already have an account :)"]
+    elif resp.intent.display_name == "check-balance":
+        if user_registered:
+            return [str(getPairs(userid))]
+        else:
+            return ["You're not registered yet :)"]
     elif resp.intent.display_name == "get-stock-info":
         company = resp.parameters.fields["company"].string_value.lower()
         print("displaying stock info")
@@ -78,6 +83,10 @@ def handle_user_message(message, userid):
         return [msg, {"path": "pil_text_font.png"}] #dicts are processed as images
     elif(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
         return ["Oops, you must be onboarded to do that! Ask me to sign up :)"]
+    elif resp.intent.display_name == "deposit-money":
+        amt = float(resp.parameters.fields["cash"].string_value)
+        changePair(id, "USD", amt)
+        return process_response(resp) + ["Successfully deposited " + str(amt) + " into your account"]
     else:
         return process_response(resp)
 
