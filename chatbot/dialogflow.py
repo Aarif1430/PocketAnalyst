@@ -1,6 +1,19 @@
+'''Dialogflow backend client (is that confusing?) 
+
+This will all be structured as follows:
+
+dialogflow.py is the 'client' interface that the backend uses to pass messages to the chatbot
+hooks contains fulfillment webhooks for dialogflow. These should be relatively deterministic and will NOT affect users state.
+    Hooks will also never be called by the backend service directly, only through dialogflow
+The backend will be the interface between fb messenger, dialogflow, and our database that stores user info
+
+
+'''
+
 import dialogflow_v2 as dialogflow
 from google.api_core.exceptions import InvalidArgument
 import random
+
 
 from config import *
 

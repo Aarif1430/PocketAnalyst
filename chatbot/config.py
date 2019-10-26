@@ -4,4 +4,5 @@ GOOGLE_APPLICATION_CREDENTIALS = 'service-acc-creds.json'
 
 PROTECTED_INTENTS = set([
     "account.create.q2",
+    "get-stock-info"
 ])
