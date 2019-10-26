@@ -17,6 +17,8 @@ import random
 
 from config import *
 
+from image import main
+
 #setup
 import os
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
@@ -41,7 +43,7 @@ def process_response(df_response):
     return messages
 
 def handle_user_message(message, userid):
-    user_registered = False #figure this out later
+    user_registered = True #figure this out later
     session_id = hash(userid)
     resp = send_msg_to_bot(message, session_id) #response.query_result
     print(resp.intent.display_name)
@@ -50,7 +52,11 @@ def handle_user_message(message, userid):
         name = register_user(resp, userid)["name"]
         print("USER registered")
         return ["Registration success. Welcome, " + name]
-    if(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
+    elif resp.intent.display_name == "get-stock-info":
+        print("displaying stock info")
+        main.generate_stock_info_image("TSLA")
+        return [{"path": "pil_text_font.png"}]
+    elif(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
         return ["Oops, you must be onboarded to do that! Ask me to sign up :)"]
     else:
         return process_response(resp)
