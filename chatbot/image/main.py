@@ -68,7 +68,6 @@ def generate_stock_info_image(ticker):
     d.text((165, 310), change, font=bebas_font(24), fill=change_color)
     bg_img.save('pil_text_font.png')
 
-    bg_img.show()
 
 
 if __name__ == "__main__":

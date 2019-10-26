@@ -7,17 +7,21 @@ The backend will be the interface between fb messenger, dialogflow, and our data
 
 In a sense, dialogflow handles the intent, while python code handles business logic + more complex responses
 
-
+TODO: ask docusign people to help meeeeee
 '''
 
 import dialogflow_v2 as dialogflow
 from google.api_core.exceptions import InvalidArgument
 import random
 
+from pyshorteners import Shortener
+shortener = Shortener('Tinyurl')
 
 from config import *
+from docusign import *
 
 from image import main
+from tickers import nameToTicker
 
 #setup
 import os
@@ -51,11 +55,14 @@ def handle_user_message(message, userid):
         #register user
         name = register_user(resp, userid)["name"]
         print("USER registered")
-        return ["Registration success. Welcome, " + name]
+        doc_url = embedded_signing_ceremony()
+        return ["Registration success. Welcome, " + name, "Please make sure to sign this docusign form: " + shortener.short(doc_url)]
     elif resp.intent.display_name == "get-stock-info":
+        company = resp.parameters.fields["company"].string_value.lower()
         print("displaying stock info")
-        main.generate_stock_info_image("TSLA")
-        return [{"path": "pil_text_font.png"}]
+        company = nameToTicker(company)
+        main.generate_stock_info_image(company)
+        return ["See for yourself ;)", {"path": "pil_text_font.png"}]
     elif(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
         return ["Oops, you must be onboarded to do that! Ask me to sign up :)"]
     else:
