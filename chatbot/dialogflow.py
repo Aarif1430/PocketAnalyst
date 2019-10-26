@@ -57,16 +57,16 @@ def handle_user_message(message, userid):
         user_registered = False
     session_id = hash(userid)
     resp = send_msg_to_bot(message, session_id) #response.query_result
-    print(resp.intent.display_name)
+    #print(resp.intent.display_name)
     if "account.create.q3" in resp.intent.display_name:
         #register user
         newuser = register_user(resp, userid)
         name = newuser["name"]
         riskmsg = "It seems you're a bit averse to risk -- totally ok! I'll keep that in mind when suggesting trades"
-        if newuser["riskTolerance"]:
+        if newuser["riskTolerant"]:
             riskmsg = "It seems that you're open to a bit of risk. I'll try to suggest trades that maximize your upside :)"
         doc_url = embedded_signing_ceremony()
-        return ["Registration success. Welcome, " + name + ". Glad to have you on board!", riskmsg, "We're opened up a brokerage account for you at XYZbrokerage. Please make sure to sign this docusign form: " + shortener.short(doc_url)]
+        return ["Registration success. Welcome, " + name + ". Glad to have you on board!", riskmsg, "We're opened up a brokerage account for you at XYZbrokerage. Please make sure to sign this docusign form: " + doc_url] #shortener.short(doc_url) was causing problems
     elif resp.intent.display_name == "account.create" and user_registered:
         return ["You already have an account :)"]
     elif resp.intent.display_name == "check-balance":
@@ -84,8 +84,8 @@ def handle_user_message(message, userid):
     elif(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
         return ["Oops, you must be onboarded to do that! Ask me to sign up :)"]
     elif resp.intent.display_name == "deposit-money":
-        amt = float(resp.parameters.fields["cash"].string_value)
-        changePair(id, "USD", amt)
+        amt = float(resp.parameters.fields["cash"].number_value)
+        changePair(userid, "USD", amt)
         return process_response(resp) + ["Successfully deposited " + str(amt) + " into your account"]
     else:
         return process_response(resp)
@@ -111,12 +111,10 @@ def register_user(message_qr, userid):
                 riskScore += 1
             newUser = {"id": userid, "name": userObj["name"], "riskTolerant": False}
             if riskScore >= 2:
-                newUser["riskTolerance"] = True
+                newUser["riskTolerant"] = True
             createUser(newUser)
             return newUser
     print("ayy")
-
-r = send_msg_to_bot("Hey, can I register?", 19291)
 
 '''
 SESSION_ID = 'current-user-id'
