@@ -62,7 +62,8 @@ def handle_user_message(message, userid):
         print("displaying stock info")
         company = nameToTicker(company)
         main.generate_stock_info_image(company)
-        return ["See for yourself ;)", {"path": "pil_text_font.png"}]
+        msg = ["See for yourself ;)", "Here you go!", "Check it out:"][random.randint(0,3)]
+        return [msg, {"path": "pil_text_font.png"}] #dicts are processed as images
     elif(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
         return ["Oops, you must be onboarded to do that! Ask me to sign up :)"]
     else:
