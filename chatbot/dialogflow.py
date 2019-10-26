@@ -37,20 +37,48 @@ def process_response(df_response):
     messages = []
     for i in range(len(df_response.fulfillment_messages)):
         out_message = df_response.fulfillment_messages[i].text.text[0]
-        #do something with the messages. Right now, I'll just print them
         messages.append(out_message)
     return messages
 
 def handle_user_message(message, userid):
     user_registered = False #figure this out later
     session_id = hash(userid)
-    resp = send_msg_to_bot(message, session_id)
+    resp = send_msg_to_bot(message, session_id) #response.query_result
     print(resp.intent.display_name)
+    if "account.create.q3" in resp.intent.display_name:
+        #register user
+        name = register_user(resp, userid)["name"]
+        print("USER registered")
+        return ["Registration success. Welcome, " + name]
     if(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
         return ["Oops, you must be onboarded to do that! Ask me to sign up :)"]
     else:
         return process_response(resp)
 
+def register_user(message_qr, userid):
+    contexts = message_qr.output_contexts
+    for i in range(len(contexts)):
+        context = contexts[i]
+        print(context)
+        if(context.lifespan_count == 69):
+            #this is the outputcontext
+            userObj = {"id": userid}
+            userObj["answer1"] = (context.parameters.fields["answer1"].string_value == 'true') or False
+            userObj["answer2"] = not (context.parameters.fields["answer2"].string_value == 'true') or False #cause this is negative
+            userObj["answer3"] = (context.parameters.fields["answer3"].string_value == 'true') or False
+            userObj["name"] = dict(context.parameters)["person"].fields["name"].string_value
+            riskScore = 0
+            if(userObj["answer1"]):
+                riskScore += 1
+            if(userObj["answer2"]):
+                riskScore += 1
+            if(userObj["answer3"]):
+                riskScore += 1
+            newUser = {"id": userid, "name": userObj["name"], "riskTolerant": False}
+            if riskScore >= 2:
+                newUser["riskTolerance"] = True
+            return newUser
+    print("ayy")
 
 r = send_msg_to_bot("Hey, can I register?", 19291)
 
