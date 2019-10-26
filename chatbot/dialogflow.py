@@ -17,7 +17,7 @@ def send_msg_to_bot(message, session_id):
         response = session_client.detect_intent(session=session, query_input=query_input)
     except InvalidArgument:
         raisesession
-    process_response(response.query_result)
+    #process_response(response.query_result)
     return response.query_result
 
 def process_response(df_response):
@@ -27,8 +27,15 @@ def process_response(df_response):
         print(out_message)
 
 def handle_user_message(message, userid):
+    user_registered = False #figure this out later
     session_id = hash(userid)
-    send_msg_to_bot(message, session_id)
+    resp = send_msg_to_bot(message, session_id)
+    print(resp.intent.display_name)
+    if(resp.intent.display_name in PROTECTED_INTENTS and not user_registered):
+        print("oops! that intent is protected. try registering, then using it")
+        #send something to user asking for them to register
+    else:
+        process_response(resp)
 
 r = send_msg_to_bot("Hey, can I register?", 19291)
 
