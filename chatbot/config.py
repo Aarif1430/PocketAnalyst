@@ -1,0 +1,3 @@
+DIALOGFLOW_PROJECT_ID = 'pocketagent-fowxnk'
+DIALOGFLOW_LANGUAGE_CODE = 'en-US'
+GOOGLE_APPLICATION_CREDENTIALS = 'service-acc-creds.json'
