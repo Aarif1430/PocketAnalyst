@@ -27,7 +27,7 @@ IEX_TOKEN = "sk_e4b122da6af4409fb2b69a760f8d2137"
 from docusign import *
 from datastore import *
 from blackrock import getRiskScore
-from prediction import getStockRecommendation, getSellRecommendation
+from prediction import getStockRecommendation, getSellRecommendation, get_beta
 
 from image import main
 from tickers import nameToTicker
@@ -77,6 +77,7 @@ def handle_user_message(message, userid):
         user_registered = False
     session_id = hash(userid)
     resp = send_msg_to_bot(message, session_id) #response.query_result
+    print(resp)
     #print(resp.intent.display_name)
     if "account.create.q3" in resp.intent.display_name:
         #register user
@@ -98,7 +99,7 @@ def handle_user_message(message, userid):
         pairs = getPairs(userid)
         main.generate_portfolio_chart_image(pairs)
         msg = "Here you go!"
-        msgtwo = "Your portfolio has a blackrock risk score of " + str(getRiskScore(pairs))
+        msgtwo = "Your portfolio has a blackrock risk score of " + str(round(getRiskScore(pairs), 2))
         return [msg, {"path": "stonk_piechart.png"}, msgtwo]
     elif resp.intent.display_name == "get-stock-info":
         company = resp.parameters.fields["company"].string_value.lower()
@@ -120,6 +121,10 @@ def handle_user_message(message, userid):
     elif resp.intent.display_name == "buy-stock":
         company = nameToTicker(resp.parameters.fields["company"].string_value.lower())
         num = float(resp.parameters.fields["number"].number_value)
+        beta = get_beta(company)
+        risk_score = getRiskScore({company: 1})
+        if not user["riskTolerant"] and (beta > 1.5 or risk_score > 30):
+            return ["The stock you're try to buy does not match your risk tolerance profile (beta:" + str(round(beta, 2)) + ", blackrock risk score: " + str(round(risk_score, 2)) + "), I recommend against buying this stock"]
         price = getStockPrice(company)
         pairs = getPairs(userid)
         if "USD" not in pairs or pairs["USD"] < price:

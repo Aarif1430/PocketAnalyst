@@ -107,3 +107,16 @@ def getSellRecommendation(tickers):
             smallest = gs
             smallestTicker = entry
     return (smallestTicker, smallest)
+
+from iexfinance.stocks import Stock
+IEX_TOKEN = "sk_e4b122da6af4409fb2b69a760f8d2137"
+
+def get_beta(ticker):
+    stock = Stock(ticker, token=IEX_TOKEN)
+    return stock.get_beta()
+
+def volatility_check(ticker):
+    if get_beta(ticker) > 1:
+        return 0
+    else:
+        return 1
