@@ -50,6 +50,17 @@ def process_response(df_response):
         messages.append(out_message)
     return messages
 
+def processPairs(assetpairs):
+    pairs = dict(assetpairs)
+    messages = []
+    if "USD" in pairs:
+        messages.append("USD💵: " + str(pairs["USD"]))
+    for key in pairs:
+        if key != "USD":
+            messages.append(key + ": " + str(pairs[key]))
+    return messages
+    
+
 def handle_user_message(message, userid):
     user = getUser(userid)
     user_registered = True
@@ -71,9 +82,13 @@ def handle_user_message(message, userid):
         return ["You already have an account :)"]
     elif resp.intent.display_name == "check-balance":
         if user_registered:
-            return [str(getPairs(userid))]
+            return processPairs(getPairs(userid))
         else:
             return ["You're not registered yet :)"]
+    elif resp.intent.display_name == "check-stocks" and user_registered:
+        main.generate_portfolio_chart_image(getPairs(userid))
+        msg = "Here you go!"
+        return [msg, {"path": "stonk_piechart.png"}]
     elif resp.intent.display_name == "get-stock-info":
         company = resp.parameters.fields["company"].string_value.lower()
         print("displaying stock info")

@@ -68,6 +68,18 @@ def generate_stock_info_image(ticker):
     d.text((165, 310), change, font=bebas_font(24), fill=change_color)
     bg_img.save('pil_text_font.png')
 
+def generate_portfolio_chart_image(pairs):
+    labels = []
+    vals = []
+    for key in pairs:
+        if key != "USD":
+            labels.append(key)
+            vals.append(pairs[key])
+    fig = go.Figure(data=[go.Pie(labels=labels, values=vals)])
+    chart_img_bytes = fig.to_image(format="png", height=450, width=825)
+    chart_img = Image.open(io.BytesIO(chart_img_bytes))
+    chart_img.save('stonk_piechart.png')
+    chart_img.show()
 
 
 if __name__ == "__main__":
