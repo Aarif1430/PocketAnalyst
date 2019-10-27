@@ -26,7 +26,6 @@ def receive_message():
         return verify_fb_token(token_sent)
     #if request was not get, we can assume it was POST
     else:
-        print("got a post")
         output = request.get_json()
         for event in output['entry']:
             messaging = event['messaging']

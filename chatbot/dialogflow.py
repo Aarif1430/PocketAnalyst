@@ -21,14 +21,23 @@ import random
 from pyshorteners import Shortener
 shortener = Shortener('Tinyurl')
 
+from iexfinance.stocks import Stock
+IEX_TOKEN = "sk_e4b122da6af4409fb2b69a760f8d2137"
 
 from docusign import *
 from datastore import *
-
+from blackrock import getRiskScore
+from prediction import getStockRecommendation, getSellRecommendation
 
 from image import main
 from tickers import nameToTicker
 
+
+def getStockPrice(ticker):
+    stock = Stock(ticker, token=IEX_TOKEN)
+    stock_data = stock.get_historical_prices()
+    today_price = float(str(stock_data[-1]["close"]))
+    return today_price
 
 
 def send_msg_to_bot(message, session_id):
@@ -86,9 +95,11 @@ def handle_user_message(message, userid):
         else:
             return ["You're not registered yet :)"]
     elif resp.intent.display_name == "check-stocks" and user_registered:
-        main.generate_portfolio_chart_image(getPairs(userid))
+        pairs = getPairs(userid)
+        main.generate_portfolio_chart_image(pairs)
         msg = "Here you go!"
-        return [msg, {"path": "stonk_piechart.png"}]
+        msgtwo = "Your portfolio has a blackrock risk score of " + str(getRiskScore(pairs))
+        return [msg, {"path": "stonk_piechart.png"}, msgtwo]
     elif resp.intent.display_name == "get-stock-info":
         company = resp.parameters.fields["company"].string_value.lower()
         print("displaying stock info")
@@ -102,6 +113,36 @@ def handle_user_message(message, userid):
         amt = float(resp.parameters.fields["cash"].number_value)
         changePair(userid, "USD", amt)
         return process_response(resp) + ["Successfully deposited " + str(amt) + " into your account"]
+    elif resp.intent.display_name == "get-recommendation":
+        ticker, gir = getStockRecommendation()
+        main.generate_stock_info_image(ticker)
+        return ["Here's a good pick! I predict that it'll go up in the near future: $" + ticker + "!", {"path": "pil_text_font.png"}]
+    elif resp.intent.display_name == "buy-stock":
+        company = nameToTicker(resp.parameters.fields["company"].string_value.lower())
+        num = float(resp.parameters.fields["number"].number_value)
+        price = getStockPrice(company)
+        pairs = getPairs(userid)
+        if "USD" not in pairs or pairs["USD"] < price:
+            return ["Sorry, but you have insufficient funds"]
+        else:
+            changePair(userid, "USD", -price*num)
+            changePair(userid, company, +num)
+            return ["Purchased shares successfully"]
+    elif resp.intent.display_name == "sell-stock":
+        company = nameToTicker(resp.parameters.fields["company"].string_value.lower())
+        num = float(resp.parameters.fields["number"].number_value)
+        price = getStockPrice(company)
+        pairs = getPairs(userid)
+        if company not in pairs or pairs[company] < num:
+            return ["You don't have " + num + " shares of " + company + " stock."]
+        else:
+            changePair(userid, "USD", +price*num)
+            changePair(userid, company, -num)
+            return ["Sold shares successfully"]
+    elif resp.intent.display_name == "get-sell-recommendation":
+        ticker, gir = getSellRecommendation(getPairs(userid).keys())
+        main.generate_stock_info_image(ticker)
+        return ["Out of all your stocks, I think that $" + ticker + " is the most likely to drop." ,{"path": "pil_text_font.png"}]
     else:
         return process_response(resp)
 

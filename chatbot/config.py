@@ -4,7 +4,9 @@ GOOGLE_APPLICATION_CREDENTIALS = 'service-acc-creds.json'
 
 PROTECTED_INTENTS = set([
     "check-balance",
-    "deposit-money"
+    "deposit-money",
+    "buy-stock",
+    "sell-stock"
 ])
 
 FB_ACCESS_TOKEN = "EAAkZBBLkY9IUBAF6ekF9FOm1uYrHonooVtgTc0pd40jalZCOhzTV1a7si7MiPv4rZAhkvCjZAJRQ94NPpTRx4jnBwaTeG4IjSRQMB76Fb043fDHIz6mR70SMUsmpPwHaeZAv3NAZARbTWaOFBfqIO8DEUz6DqeZCtOIY5X2qjSr6jZBoDmppU1J0"
